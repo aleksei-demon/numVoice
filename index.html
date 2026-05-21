@@ -354,7 +354,12 @@
             playNumberSounds(number);
         });
 
-        clear.addEventListener('click', () => { input.value = ''; result.innerText = '' });
+        clear.addEventListener('click', () => {
+            input.value = '';
+            input.dataset.raw = '';
+            result.innerText = '';
+            speechSynthesis.cancel();
+        });
 
     </script>
 
