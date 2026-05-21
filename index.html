@@ -49,9 +49,10 @@
             outline: none;
             padding: 20px;
             border-radius: 20px;
-            font-size: 28px;
+            font-size: 26px;
             text-align: center;
             margin-bottom: 20px;
+            margin-top: 20px;
             background: white;
             color: #333;
             box-shadow: 0 8px 20px rgba(0, 0, 0, .15);
@@ -63,7 +64,7 @@
             border: none;
             border-radius: 20px;
             padding: 18px;
-            font-size: 28px;
+            font-size: 22px;
             cursor: pointer;
             background: #ffd84d;
             color: #333;
@@ -74,6 +75,10 @@
 
         .btn:hover {
             transform: scale(1.02);
+        }
+
+        .btn:active {
+            transform: scale(0.96);
         }
 
         .result {
@@ -103,13 +108,12 @@
 <body>
 
     <div class="app">
+        <button class="btn" id="clear">Сброс</button>
 
         <input id="numberInput" class="input" type="text" inputmode="numeric" autocomplete="off"
             placeholder="Введите число" />
 
-        <button class="btn" id="speakBtn">
-            Ответ
-        </button>
+        <button class="btn" id="speakBtn">Ответ</button>
 
         <div class="result" id="result"></div>
 
@@ -120,6 +124,7 @@
         const input = document.getElementById('numberInput');
         const result = document.getElementById('result');
         const btn = document.getElementById('speakBtn');
+        const clear = document.getElementById('clear');
 
         // фильтрация + форматирование пробелами
         input.addEventListener('input', () => {
@@ -318,6 +323,8 @@
 
             utterance.pitch = 1;
 
+            utterance.volume = 0.3;
+
             const voices = speechSynthesis.getVoices();
 
             const voice =
@@ -337,20 +344,17 @@
         // =========================
 
         btn.addEventListener('click', () => {
-
             const number = input.dataset.raw || '';
-
             if (!number) {
                 result.textContent = '';
                 return;
             }
-
             const text = numberToWords(number);
-
             result.textContent = text;
-
             playNumberSounds(number);
         });
+
+        clear.addEventListener('click', () => { input.value = ''; result.innerText = '' });
 
     </script>
 
