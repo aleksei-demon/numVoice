@@ -392,23 +392,50 @@
         // кнопка
         // =========================
 
-        btn.addEventListener('click', () => {
-            const number = input.dataset.raw || '';
-            if (!number) {
-                result.textContent = '';
-                return;
-            }
-            const text = numberToWords(number);
-            result.textContent = text;
-            playNumberSounds(number);
-        });
+        // btn.addEventListener('click', () => {
+        //     const number = input.dataset.raw || '';
+        //     if (!number) {
+        //         result.textContent = '';
+        //         return;
+        //     }
+        //     const text = numberToWords(number);
+        //     result.textContent = text;
+        //     playNumberSounds(number);
+        // });
 
         clear.addEventListener('click', () => {
             input.value = '';
             input.dataset.raw = '';
             result.innerText = '';
             speechSynthesis.cancel();
+            input.focus(); // фокус после нажатия "Сброс"
         });
+
+
+        // Устанавливаем фокус при загрузке страницы
+        window.addEventListener('DOMContentLoaded', () => {
+            input.focus();
+        });
+
+        // Добавляем фокус после нажатия кнопок
+        btn.addEventListener('click', () => {
+            const number = input.dataset.raw || '';
+            if (!number) {
+                result.textContent = '';
+                input.focus(); // фокус после нажатия "Ответ" даже если пусто
+                return;
+            }
+            const text = numberToWords(number);
+            result.textContent = text;
+            playNumberSounds(number);
+            input.focus(); // фокус после нажатия "Ответ"
+        });
+
+
+
+
+
+
 
     </script>
 
