@@ -239,6 +239,7 @@
         ];
 
         function plural(n, forms) {
+            if (!forms || forms.length < 3) return ''; // защита от undefined
             n = Math.abs(n) % 100;
             let n1 = n % 10;
 
@@ -250,53 +251,39 @@
         }
 
         function tripletToWords(num, female = false) {
-
             let words = [];
 
             let h = Math.floor(num / 100);
             let t = Math.floor((num % 100) / 10);
             let o = num % 10;
 
-            if (h) {
-                words.push(hundreds[h]);
-            }
+            if (h) words.push(hundreds[h]);
 
             if (t === 1) {
                 words.push(teens[o]);
             } else {
-
-                if (t) {
-                    words.push(tens[t]);
-                }
-
-                if (o) {
-                    words.push(
-                        female
-                            ? onesFemale[o]
-                            : onesMale[o]
-                    );
-                }
+                if (t) words.push(tens[t]);
+                if (o) words.push(female ? onesFemale[o] : onesMale[o]);
             }
 
             return words.join(' ');
         }
 
         function numberToWords(number) {
-
+            if (!number || !/^\d+$/.test(number)) return ''; // защита от пустого или некорректного ввода
             if (number === '0') return 'ноль';
 
             let parts = [];
             let chunks = [];
 
+            // Разбиваем число на тройки
             while (number.length > 0) {
                 chunks.unshift(number.slice(-3));
                 number = number.slice(0, -3);
             }
 
             chunks.forEach((chunk, index) => {
-
-                let num = parseInt(chunk);
-
+                let num = parseInt(chunk, 10);
                 if (!num) return;
 
                 let groupIndex = chunks.length - index - 1;
@@ -305,22 +292,18 @@
 
                 let words = tripletToWords(num, female);
 
+                // Защита от выхода за пределы массива groups
                 let groupName = '';
-
-                if (groupIndex > 0) {
+                if (groups[groupIndex]) {
                     groupName = plural(num, groups[groupIndex]);
                 }
 
-                parts.push(words);
-
-                if (groupName) {
-                    parts.push(groupName);
-                }
+                if (words) parts.push(words);
+                if (groupName) parts.push(groupName);
             });
 
             return parts.join(' ');
         }
-
 
         // =========================
         // audio
