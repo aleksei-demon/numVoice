@@ -40,7 +40,7 @@
 
         .app {
             width: 100%;
-            max-width: 700px;
+            max-width: 999px;
         }
 
         .input {
@@ -94,7 +94,15 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, .15);
         }
 
-        @media(max-width:900px) {
+        #clear {
+            background: #fecb66;
+        }
+
+        #speakBtn {
+            background: #ebfd71;
+        }
+
+        @media(max-width: 999px) {
 
             .input,
             .btn,
@@ -321,9 +329,9 @@
 
             if (text.length > 51) {
                 // Слишком длинный текст — "математику сломал!"
-                utterance = new SpeechSynthesisUtterance("математику сломал! Мелкий засранец!");
+                utterance = new SpeechSynthesisUtterance("математику сломал мелкий засранц!");
                 utterance.lang = 'ru-RU';
-                utterance.rate = 1.2;       // можно увеличить скорость
+                utterance.rate = 1;       // можно увеличить скорость
                 utterance.pitch = 1.5;    // немного выше тон
                 utterance.volume = 0.3;
                 // можно выбрать голос русскоязычный
