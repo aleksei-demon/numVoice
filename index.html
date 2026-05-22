@@ -309,33 +309,76 @@
         // audio
         // =========================
 
-        function playNumberSounds(text) {
 
+
+
+
+        function playNumberSounds(text) {
+            console.log(text.length);
             speechSynthesis.cancel();
 
-            const utterance = new SpeechSynthesisUtterance(text);
+            let utterance;
 
-            utterance.lang = 'en-US';
+            if (text.length > 51) {
+                // Слишком длинный текст — "математику сломал!"
+                utterance = new SpeechSynthesisUtterance("математику сломал! Мелкий засранец!");
+                utterance.lang = 'ru-RU';
+                utterance.rate = 1.2;       // можно увеличить скорость
+                utterance.pitch = 1.5;    // немного выше тон
+                utterance.volume = 0.3;
+                // можно выбрать голос русскоязычный
+                const voices = speechSynthesis.getVoices();
+                const voice = voices.find(v => v.lang.includes('ru'));
+                if (voice) utterance.voice = voice;
 
-            utterance.rate = 0.67;
-
-            utterance.pitch = 1;
-
-            utterance.volume = 0.3;
-
-            const voices = speechSynthesis.getVoices();
-
-            const voice =
-                voices.find(v =>
-                    v.lang.includes('en')
-                );
-
-            if (voice) {
-                utterance.voice = voice;
+            } else {
+                // Обычный текст — оригинальная логика
+                utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.67;
+                utterance.pitch = 1;
+                utterance.volume = 0.3;
+                const voices = speechSynthesis.getVoices();
+                const voice = voices.find(v => v.lang.includes('en'));
+                if (voice) utterance.voice = voice;
             }
 
             speechSynthesis.speak(utterance);
         }
+
+
+
+
+
+
+
+
+
+
+
+
+        // function playNumberSounds(text) {
+        //     console.log(text.length);
+        //     speechSynthesis.cancel();
+
+        //     const utterance = new SpeechSynthesisUtterance(text);
+
+        //     utterance.lang = 'en-US';
+        //     utterance.rate = 0.67;
+        //     utterance.pitch = 1;
+        //     utterance.volume = 0.3;
+        //     const voices = speechSynthesis.getVoices();
+
+        //     const voice =
+        //         voices.find(v =>
+        //             v.lang.includes('en')
+        //         );
+
+        //     if (voice) {
+        //         utterance.voice = voice;
+        //     }
+        //     speechSynthesis.speak(utterance);
+        // }
 
         // =========================
         // кнопка
