@@ -13,30 +13,43 @@
             padding: 0;
         }
 
-        body {
+        /* body {
             min-height: 100vh;
             font-family: Arial, sans-serif;
             overflow: hidden;
-            /* background:
-                radial-gradient(circle at 20% 20%, rgba(255, 230, 120, .9) 0 12px, transparent 13px),
-                radial-gradient(circle at 80% 30%, rgba(255, 230, 120, .8) 0 16px, transparent 17px),
-                radial-gradient(circle at 60% 80%, rgba(255, 230, 120, .7) 0 10px, transparent 11px),
-                radial-gradient(circle at 10% 75%, rgba(255, 230, 120, .8) 0 14px, transparent 15px),
-                linear-gradient(180deg, #8fd3ff, #62b8ff, #8fd3ff); */
-
             background:
                 radial-gradient(circle at 10% 20%, #fff176 5%, transparent 6%),
                 radial-gradient(circle at 80% 30%, #fff176 8%, transparent 9%),
                 radial-gradient(circle at 20% 80%, #fff176 4%, transparent 5%),
                 radial-gradient(circle at 90% 90%, #fff176 10%, transparent 11%),
                 linear-gradient(135deg, #e0f7fa, #81d4fa);
-
-
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+        } */
+
+
+
+        body {
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at 10% 20%, #fff176 5%, transparent 6%),
+                radial-gradient(circle at 80% 30%, #fff176 8%, transparent 9%),
+                radial-gradient(circle at 20% 80%, #fff176 4%, transparent 5%),
+                radial-gradient(circle at 90% 90%, #fff176 10%, transparent 11%),
+                linear-gradient(135deg, #e0f7fa, #81d4fa);
+            display: flex;
+            justify-content: center;
+            /* оставляем горизонтальное центрирование */
+            align-items: flex-start;
+            /* содержимое теперь сверху */
+            padding: 20px;
         }
+
+
 
         .app {
             width: 100%;
