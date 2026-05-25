@@ -128,18 +128,45 @@
         const btn = document.getElementById('speakBtn');
         const clear = document.getElementById('clear');
 
-        // фильтрация + форматирование пробелами
         input.addEventListener('input', () => {
-            let digits = input.value.replace(/\D/g, '');
-            input.dataset.raw = digits;
-            input.value = formatNumber(digits);
+            let value = input.value;
+            let cleaned = '';
+            let i = 0;
+            while (i < value.length) {
+                let char = value[i];
+                if (cleaned === '') {
+                    // Первый символ: либо '-' либо цифра
+                    if (char === '-') {
+                        cleaned += char;
+                    } else if (/\d/.test(char)) {
+                        cleaned += char;
+                    }
+                } else {
+                    let lastChar = cleaned[cleaned.length - 1];
+                    if (/\d/.test(lastChar)) {
+                        // После числа разрешен только один знак
+                        if (/[+\-*/]/.test(char)) {
+                            cleaned += char;
+                        } else if (/\d/.test(char)) {
+                            cleaned += char;
+                        }
+                    } else if (/[+\-*/]/.test(lastChar)) {
+                        // После знака можно вводить только число
+                        if (/\d/.test(char)) {
+                            cleaned += char;
+                        }
+                    }
+                }
+                i++;
+            }
+            input.dataset.raw = cleaned;
+            input.value = formatNumberForDisplay(cleaned);
         });
 
-        function formatNumber(str) {
-            if (!str) return '';
-            return str.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+        function formatNumberForDisplay(str) {
+            // Форматируем только отдельные числа, не трогая знаки операций
+            return str.replace(/\d+/g, (match) => match.replace(/\B(?=(\d{3})+(?!\d))/g, ' '));
         }
-
 
         // =========================
         // число словами
@@ -271,49 +298,161 @@
             return words.join(' ');
         }
 
-        function numberToWords(number) {
-            if (!number || !/^\d+$/.test(number)) return ''; // защита от пустого или некорректного ввода
-            if (number === '0') return 'ноль';
+        // =========================
+        // число словами и вычисление выражений
+        // =========================
 
-            let parts = [];
-            let chunks = [];
+        function parseExpression(input) {
+            const match = String(input).match(/^(-?\d+)([+\-*/])?(\d+)?$/);
 
-            // Разбиваем число на тройки
-            while (number.length > 0) {
-                chunks.unshift(number.slice(-3));
-                number = number.slice(0, -3);
+            if (!match) return null;
+
+            return {
+                left: BigInt(match[1]),
+                operator: match[2] || null,
+                right: match[3] ? BigInt(match[3]) : null
+            };
+        }
+
+        function calculateExpression(left, operator, right) {
+
+            if (!operator || right === null) {
+                return left;
             }
 
+            switch (operator) {
+                case '+':
+                    return left + right;
+
+                case '-':
+                    return left - right;
+
+                case '*':
+                    return left * right;
+
+                case '/':
+                    return right !== 0n ? left / right : null;
+
+                default:
+                    return null;
+            }
+        }
+
+        function splitIntoChunks(numberString) {
+
+            const chunks = [];
+
+            while (numberString.length > 0) {
+                chunks.unshift(numberString.slice(-3));
+                numberString = numberString.slice(0, -3);
+            }
+
+            return chunks;
+        }
+
+        function convertChunksToWords(chunks) {
+
+            const parts = [];
+
             chunks.forEach((chunk, index) => {
-                let num = parseInt(chunk, 10);
+
+                const num = parseInt(chunk, 10);
+
                 if (!num) return;
 
-                let groupIndex = chunks.length - index - 1;
+                const groupIndex = chunks.length - index - 1;
 
-                let female = groupIndex === 1;
+                const female = groupIndex === 1;
 
-                let words = tripletToWords(num, female);
+                const words = tripletToWords(num, female);
 
-                // Защита от выхода за пределы массива groups
-                let groupName = '';
-                if (groups[groupIndex]) {
-                    groupName = plural(num, groups[groupIndex]);
+                const groupName = groups[groupIndex]
+                    ? plural(num, groups[groupIndex])
+                    : '';
+
+                if (words) {
+                    parts.push(words);
                 }
 
-                if (words) parts.push(words);
-                if (groupName) parts.push(groupName);
+                if (groupName) {
+                    parts.push(groupName);
+                }
             });
 
             return parts.join(' ');
         }
 
+        function numberToWords(input) {
+
+            const parsed = parseExpression(input);
+
+            if (!parsed) {
+                return String(input);
+            }
+
+            let result = calculateExpression(
+                parsed.left,
+                parsed.operator,
+                parsed.right
+            );
+
+            if (result === null) {
+                return 'ошибка';
+            }
+
+            const negative = result < 0n;
+
+            if (negative) {
+                result = -result;
+            }
+
+            if (result === 0n) {
+                return 'ноль';
+            }
+
+            const numberString = result.toString();
+
+            const chunks = splitIntoChunks(numberString);
+
+            const words = convertChunksToWords(chunks);
+
+            return negative
+                ? 'минус ' + words
+                : words;
+        }
+
+
+        function evaluateExpression(input) {
+
+            const parsed = parseExpression(input);
+
+            if (!parsed) {
+                return null;
+            }
+
+            return calculateExpression(
+                parsed.left,
+                parsed.operator,
+                parsed.right
+            );
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         // =========================
         // audio
         // =========================
-
-
-
-
 
         function playNumberSounds(text) {
             console.log(result.textContent.length);
@@ -323,7 +462,7 @@
 
             if (text.length > 32 || result.textContent.length > 200) {
                 // Слишком длинный текст — "математику сломал!"
-                utterance = new SpeechSynthesisUtterance("математику сломал мелкий засранц!");
+                utterance = new SpeechSynthesisUtterance("математику сломал!");
                 utterance.lang = 'ru-RU';
                 utterance.rate = 1;       // можно увеличить скорость
                 utterance.pitch = 1.5;    // немного выше тон
@@ -356,7 +495,6 @@
             input.focus(); // фокус после нажатия "Сброс"
         });
 
-
         // Устанавливаем фокус при загрузке страницы
         window.addEventListener('DOMContentLoaded', () => {
             input.focus();
@@ -364,16 +502,39 @@
 
         // Добавляем фокус после нажатия кнопок
         btn.addEventListener('click', () => {
+
             const number = input.dataset.raw || '';
+
             if (!number) {
                 result.textContent = '';
-                input.focus(); // фокус после нажатия "Ответ" даже если пусто
+                input.focus();
                 return;
             }
+
+            // русский текст
             const text = numberToWords(number);
+
             result.textContent = text;
-            playNumberSounds(number);
-            input.focus(); // фокус после нажатия "Ответ"
+
+            // число результата
+            const calculated = evaluateExpression(number);
+
+            if (calculated !== null) {
+                //  playNumberSounds(calculated.toString());
+
+                let speechText;
+
+                if (calculated < 0n) {
+                    speechText = 'negative ' + (-calculated).toString();
+                } else {
+                    speechText = calculated.toString();
+                }
+
+                playNumberSounds(speechText);
+
+            }
+
+            input.focus();
         });
 
     </script>
