@@ -303,39 +303,81 @@
         // =========================
 
         function parseExpression(input) {
-            const match = String(input).match(/^(-?\d+)([+\-*/])?(\d+)?$/);
 
-            if (!match) return null;
+            let expr = String(input)
+                .replace(/\s+/g, '')
+                .replace(/[+\-*/]+$/, '');
 
-            return {
-                left: BigInt(match[1]),
-                operator: match[2] || null,
-                right: match[3] ? BigInt(match[3]) : null
-            };
+            if (!expr) {
+                return null;
+            }
+
+            const tokens = expr.match(/\d+|[+\-*/]/g);
+
+            if (!tokens) {
+                return null;
+            }
+
+            return tokens;
         }
 
-        function calculateExpression(left, operator, right) {
+        function calculateExpression(tokens) {
 
-            if (!operator || right === null) {
-                return left;
+            if (!tokens || !tokens.length) {
+                return null;
             }
 
-            switch (operator) {
-                case '+':
-                    return left + right;
+            const work = [...tokens];
 
-                case '-':
-                    return left - right;
+            // сначала * и /
+            let i = 1;
 
-                case '*':
-                    return left * right;
+            while (i < work.length - 1) {
 
-                case '/':
-                    return right !== 0n ? left / right : null;
+                const op = work[i];
 
-                default:
-                    return null;
+                if (op === '*' || op === '/') {
+
+                    const left = BigInt(work[i - 1]);
+                    const right = BigInt(work[i + 1]);
+
+                    let value;
+
+                    if (op === '*') {
+                        value = left * right;
+                    } else {
+                        if (right === 0n) {
+                            return null;
+                        }
+
+                        value = left / right;
+                    }
+
+                    work.splice(i - 1, 3, value.toString());
+
+                    i = 1;
+                    continue;
+                }
+
+                i += 2;
             }
+
+            // потом + и -
+            let result = BigInt(work[0]);
+
+            for (let i = 1; i < work.length; i += 2) {
+
+                const op = work[i];
+                const value = BigInt(work[i + 1]);
+
+                if (op === '+') {
+                    result += value;
+                } else if (op === '-') {
+                    result -= value;
+                }
+            }
+
+            return result;
         }
 
         function splitIntoChunks(numberString) {
@@ -384,17 +426,24 @@
 
         function numberToWords(input) {
 
-            const parsed = parseExpression(input);
+            // const parsed = parseExpression(input);
 
-            if (!parsed) {
+            // if (!parsed) {
+            //     return String(input);
+            // }
+
+            // let result = calculateExpression(
+            //     parsed.left,
+            //     parsed.operator,
+            //     parsed.right
+            // );
+
+            let result = evaluateExpression(input);
+
+            if (result === null) {
                 return String(input);
             }
 
-            let result = calculateExpression(
-                parsed.left,
-                parsed.operator,
-                parsed.right
-            );
 
             if (result === null) {
                 return 'ошибка';
@@ -424,17 +473,13 @@
 
         function evaluateExpression(input) {
 
-            const parsed = parseExpression(input);
+            const tokens = parseExpression(input);
 
-            if (!parsed) {
+            if (!tokens) {
                 return null;
             }
 
-            return calculateExpression(
-                parsed.left,
-                parsed.operator,
-                parsed.right
-            );
+            return calculateExpression(tokens);
         }
 
 
@@ -537,6 +582,15 @@
             input.focus();
         });
 
+
+        input.addEventListener('keydown', (event) => {
+
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                btn.click();
+            }
+
+        });
     </script>
 
 </body>
